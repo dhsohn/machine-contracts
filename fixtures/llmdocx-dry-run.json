@@ -1,0 +1,61 @@
+{
+  "contract": {
+    "name": "factory/machine-observation",
+    "version": 1
+  },
+  "producer": {
+    "name": "llmdocx",
+    "version": "0.1.0"
+  },
+  "operation": {
+    "id": "patch-preview-20260809-12345678",
+    "kind": "document/patch"
+  },
+  "lifecycle": {
+    "phase": "finished",
+    "outcome": "succeeded",
+    "codes": []
+  },
+  "handoff": {
+    "status": "ready",
+    "codes": []
+  },
+  "delivery": {
+    "status": "complete",
+    "codes": []
+  },
+  "artifacts": {
+    "preview-report": {
+      "status": "available",
+      "required": true,
+      "role": "human-report",
+      "path": "patch_preview.html",
+      "media_type": "text/html",
+      "bytes": 2048,
+      "byte_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  },
+  "lineage": {
+    "trace_id": null,
+    "upstream": []
+  },
+  "payload": {
+    "contract": {
+      "name": "document/patch-preview",
+      "version": 1
+    },
+    "data": {
+      "document_id": "paper-17",
+      "result_document_id": "paper-17-preview",
+      "applied": false,
+      "operations": [],
+      "pages": {
+        "added": [],
+        "changed": []
+      },
+      "artifact_refs": [
+        "preview-report"
+      ]
+    }
+  }
+}

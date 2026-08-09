@@ -1,0 +1,272 @@
+{
+  "contract": {
+    "name": "factory/machine-observation",
+    "version": 1
+  },
+  "artifact_roles": [
+    "document",
+    "geometry",
+    "human-report",
+    "log",
+    "source",
+    "supporting-information"
+  ],
+  "operation_kinds": [
+    "chemistry/elementary-step-export",
+    "chemistry/orca-run",
+    "chemistry/workflow",
+    "document/paper-pack",
+    "document/patch",
+    "document/run",
+    "manuscript/revision"
+  ],
+  "payload_contracts": [
+    {
+      "name": "chemistry/elementary-step",
+      "schema": "schemas/payloads/chemistry-elementary-step-v1.schema.json",
+      "version": 1,
+      "required_keys": [
+        "step_id",
+        "source",
+        "reactant",
+        "product",
+        "atom_correspondence",
+        "bond_changes",
+        "mapping_validation",
+        "endpoint_pair",
+        "geometry_scope"
+      ],
+      "ready_requirements": [
+        {
+          "path": ["endpoint_pair"],
+          "operator": "not_null"
+        }
+      ]
+    },
+    {
+      "name": "chemistry/results-bundle",
+      "schema": "schemas/payloads/chemistry-results-bundle-v1.schema.json",
+      "version": 1,
+      "required_keys": [
+        "result_kind",
+        "engine",
+        "summary",
+        "results",
+        "artifact_refs"
+      ],
+      "artifact_references": {
+        "declared": {
+          "path": ["artifact_refs"],
+          "many": true
+        },
+        "nested": []
+      },
+      "ready_requirements": []
+    },
+    {
+      "name": "document/paper-pack",
+      "schema": "schemas/payloads/document-paper-pack-v1.schema.json",
+      "version": 1,
+      "required_keys": [
+        "document_id",
+        "artifact_refs",
+        "metadata"
+      ],
+      "artifact_references": {
+        "declared": {
+          "path": ["artifact_refs"],
+          "many": true
+        },
+        "nested": []
+      },
+      "ready_requirements": []
+    },
+    {
+      "name": "document/patch-preview",
+      "schema": "schemas/payloads/document-patch-preview-v1.schema.json",
+      "version": 1,
+      "required_keys": [
+        "document_id",
+        "result_document_id",
+        "applied",
+        "operations",
+        "pages",
+        "artifact_refs"
+      ],
+      "artifact_references": {
+        "declared": {
+          "path": ["artifact_refs"],
+          "many": true
+        },
+        "nested": []
+      },
+      "ready_requirements": [
+        {
+          "path": ["applied"],
+          "operator": "equals",
+          "value": false
+        }
+      ]
+    },
+    {
+      "name": "document/patch-result",
+      "schema": "schemas/payloads/document-patch-result-v1.schema.json",
+      "version": 1,
+      "required_keys": [
+        "document_id",
+        "result_document_id",
+        "applied",
+        "operations",
+        "pages",
+        "artifact_refs"
+      ],
+      "artifact_references": {
+        "declared": {
+          "path": ["artifact_refs"],
+          "many": true
+        },
+        "nested": []
+      },
+      "ready_requirements": [
+        {
+          "path": ["applied"],
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "document/run-result",
+      "schema": "schemas/payloads/document-run-result-v1.schema.json",
+      "version": 1,
+      "required_keys": [
+        "document_id",
+        "target",
+        "ok",
+        "cells",
+        "tables",
+        "artifact_refs"
+      ],
+      "artifact_references": {
+        "declared": {
+          "path": ["artifact_refs"],
+          "many": true
+        },
+        "nested": [
+          {
+            "path": ["cells", "*", "figure_artifact_refs"],
+            "many": true
+          },
+          {
+            "path": ["tables", "*", "artifact_ref"],
+            "many": false
+          }
+        ]
+      },
+      "ready_requirements": [
+        {
+          "path": ["ok"],
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "manuscript/revision-report",
+      "schema": "schemas/payloads/manuscript-revision-report-v1.schema.json",
+      "version": 1,
+      "required_keys": [
+        "accepted_revisions",
+        "held_for_human_review",
+        "rejected_revisions",
+        "unresolved_count",
+        "revisions",
+        "attempts",
+        "unresolved",
+        "bookkeeping",
+        "paragraph_notes",
+        "deterministic_gates",
+        "approval_policy",
+        "revised_manuscript",
+        "manuscript_diff"
+      ],
+      "ready_requirements": []
+    }
+  ],
+  "producers": [
+    "chemvas",
+    "llmdocx",
+    "ollama_bot",
+    "orca_auto"
+  ],
+  "routes": [
+    {
+      "producer": "chemvas",
+      "operation_kind": "chemistry/elementary-step-export",
+      "payload_contract": "chemistry/elementary-step",
+      "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "orca_auto",
+      "operation_kind": "chemistry/orca-run",
+      "payload_contract": "chemistry/results-bundle",
+      "payload_version": 1,
+      "requirements": [
+        {
+          "path": ["result_kind"],
+          "operator": "equals",
+          "value": "engine-run"
+        }
+      ]
+    },
+    {
+      "producer": "orca_auto",
+      "operation_kind": "chemistry/workflow",
+      "payload_contract": "chemistry/results-bundle",
+      "payload_version": 1,
+      "requirements": [
+        {
+          "path": ["result_kind"],
+          "operator": "equals",
+          "value": "workflow"
+        }
+      ]
+    },
+    {
+      "producer": "ollama_bot",
+      "operation_kind": "manuscript/revision",
+      "payload_contract": "manuscript/revision-report",
+      "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "llmdocx",
+      "operation_kind": "document/paper-pack",
+      "payload_contract": "document/paper-pack",
+      "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "llmdocx",
+      "operation_kind": "document/patch",
+      "payload_contract": "document/patch-preview",
+      "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "llmdocx",
+      "operation_kind": "document/patch",
+      "payload_contract": "document/patch-result",
+      "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "llmdocx",
+      "operation_kind": "document/run",
+      "payload_contract": "document/run-result",
+      "payload_version": 1,
+      "requirements": []
+    }
+  ]
+}

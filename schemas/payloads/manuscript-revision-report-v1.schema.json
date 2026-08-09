@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/payloads/manuscript-revision-report-v1.schema.json",
+  "title": "Manuscript Revision Report Payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "accepted_revisions",
+    "held_for_human_review",
+    "rejected_revisions",
+    "unresolved_count",
+    "revisions",
+    "attempts",
+    "unresolved",
+    "bookkeeping",
+    "paragraph_notes",
+    "deterministic_gates",
+    "approval_policy",
+    "revised_manuscript",
+    "manuscript_diff"
+  ],
+  "properties": {
+    "accepted_revisions": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "held_for_human_review": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rejected_revisions": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unresolved_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "revisions": {
+      "type": "array"
+    },
+    "attempts": {
+      "type": "array"
+    },
+    "unresolved": {
+      "type": "array"
+    },
+    "bookkeeping": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "paragraph_notes": {
+      "type": "object"
+    },
+    "deterministic_gates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "approval_policy": {
+      "type": "string"
+    },
+    "revised_manuscript": {
+      "type": "string"
+    },
+    "manuscript_diff": {
+      "type": "string"
+    }
+  }
+}

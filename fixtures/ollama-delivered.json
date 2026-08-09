@@ -1,0 +1,70 @@
+{
+  "contract": {
+    "name": "factory/machine-observation",
+    "version": 1
+  },
+  "producer": {
+    "name": "ollama_bot",
+    "version": "1.0.0"
+  },
+  "operation": {
+    "id": "mission-20260809-abcdef12",
+    "kind": "manuscript/revision"
+  },
+  "lifecycle": {
+    "phase": "finished",
+    "outcome": "succeeded",
+    "codes": []
+  },
+  "handoff": {
+    "status": "ready",
+    "codes": []
+  },
+  "delivery": {
+    "status": "complete",
+    "codes": []
+  },
+  "artifacts": {
+    "human-report": {
+      "status": "available",
+      "required": true,
+      "role": "human-report",
+      "path": "manuscript_report.html",
+      "media_type": "text/html",
+      "bytes": 16384,
+      "byte_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    }
+  },
+  "lineage": {
+    "trace_id": null,
+    "upstream": []
+  },
+  "payload": {
+    "contract": {
+      "name": "manuscript/revision-report",
+      "version": 1
+    },
+    "data": {
+      "accepted_revisions": 2,
+      "held_for_human_review": 1,
+      "rejected_revisions": 0,
+      "unresolved_count": 1,
+      "revisions": [],
+      "attempts": [],
+      "unresolved": [],
+      "bookkeeping": [],
+      "paragraph_notes": {},
+      "deterministic_gates": [
+        "exact_evidence_quote",
+        "numeric_tokens",
+        "doi_tokens",
+        "citation_labels",
+        "interior_horizontal_whitespace_only",
+        "markdown_line_and_indentation_preservation"
+      ],
+      "approval_policy": "only duplicate interior horizontal-whitespace runs between prose characters collapse to one ASCII space",
+      "revised_manuscript": "Revised manuscript text.",
+      "manuscript_diff": ""
+    }
+  }
+}

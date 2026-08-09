@@ -1,0 +1,62 @@
+{
+  "contract": {
+    "name": "factory/machine-observation",
+    "version": 1
+  },
+  "producer": {
+    "name": "chemvas",
+    "version": "1.0.0"
+  },
+  "operation": {
+    "id": "step-S02-a1fce4363854ff88",
+    "kind": "chemistry/elementary-step-export"
+  },
+  "lifecycle": {
+    "phase": "finished",
+    "outcome": "succeeded",
+    "codes": []
+  },
+  "handoff": {
+    "status": "blocked",
+    "codes": [
+      "chemvas/multicomponent_precomplex_geometry_not_provided"
+    ]
+  },
+  "delivery": {
+    "status": "complete",
+    "codes": []
+  },
+  "artifacts": {},
+  "lineage": {
+    "trace_id": null,
+    "upstream": []
+  },
+  "payload": {
+    "contract": {
+      "name": "chemistry/elementary-step",
+      "version": 1
+    },
+    "data": {
+      "step_id": "S02",
+      "source": {},
+      "reactant": {
+        "state_id": "R02"
+      },
+      "product": {
+        "state_id": "P02"
+      },
+      "atom_correspondence": {},
+      "bond_changes": {
+        "step_id": "S02",
+        "entries": []
+      },
+      "mapping_validation": "complete_source_and_generated_geometry_bijection",
+      "endpoint_pair": null,
+      "geometry_scope": {
+        "reactant_component_count": 2,
+        "product_component_count": 1,
+        "interaction_geometry_guarantee": "not_provided"
+      }
+    }
+  }
+}

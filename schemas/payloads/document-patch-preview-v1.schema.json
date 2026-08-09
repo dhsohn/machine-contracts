@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/payloads/document-patch-preview-v1.schema.json",
+  "title": "Document Patch Preview Payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "document_id",
+    "result_document_id",
+    "applied",
+    "operations",
+    "pages",
+    "artifact_refs"
+  ],
+  "properties": {
+    "document_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result_document_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "applied": {
+      "const": false
+    },
+    "operations": {
+      "type": "array"
+    },
+    "pages": {
+      "type": "object"
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

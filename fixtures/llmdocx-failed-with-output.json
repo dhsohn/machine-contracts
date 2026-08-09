@@ -1,0 +1,74 @@
+{
+  "contract": {
+    "name": "factory/machine-observation",
+    "version": 1
+  },
+  "producer": {
+    "name": "llmdocx",
+    "version": "0.4.0"
+  },
+  "operation": {
+    "id": "run-20260809-87654321",
+    "kind": "document/run"
+  },
+  "lifecycle": {
+    "phase": "finished",
+    "outcome": "failed",
+    "codes": [
+      "llmdocx/code-cell-failed"
+    ]
+  },
+  "handoff": {
+    "status": "blocked",
+    "codes": [
+      "llmdocx/code-cell-failed"
+    ]
+  },
+  "delivery": {
+    "status": "complete",
+    "codes": []
+  },
+  "artifacts": {
+    "figure-001": {
+      "status": "available",
+      "required": true,
+      "role": "document",
+      "path": "cell1-fig1.png",
+      "media_type": "image/png",
+      "bytes": 1024,
+      "byte_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  },
+  "lineage": {
+    "trace_id": null,
+    "upstream": []
+  },
+  "payload": {
+    "contract": {
+      "name": "document/run-result",
+      "version": 1
+    },
+    "data": {
+      "document_id": "document-json-sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "target": {
+        "kind": "page",
+        "id": "analysis"
+      },
+      "ok": false,
+      "cells": [
+        {
+          "id": "plot-and-fail",
+          "stdout": "figure emitted before failure\n",
+          "figure_artifact_refs": [
+            "figure-001"
+          ],
+          "error": "ValueError: fit did not converge"
+        }
+      ],
+      "tables": [],
+      "artifact_refs": [
+        "figure-001"
+      ]
+    }
+  }
+}
