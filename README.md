@@ -68,11 +68,16 @@ Human HTML, XYZ, CSV, Markdown, logs, and document binaries may accompany
 
 ## Validation
 
-Run the schema and semantic fixture checks with:
+Run everything CI enforces — lint, format, and the schema, registry and semantic
+fixture checks — with:
 
 ```bash
-python3 -m unittest discover -s tests -v
+make check
 ```
+
+It selects a Python that can import `jsonschema.Draft202012Validator` and run
+`ruff`, so it does not depend on how the calling shell resolves `python3`. Set
+`PYTHON_BIN` to choose one yourself.
 
 Validate a producer generation, including the required basename and every
 available artifact's exact bytes, with:
