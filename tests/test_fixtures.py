@@ -12,7 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from scripts.validate import (  # noqa: E402
+    REQUIREMENT_OPERATORS,
     ContractError,
+    _check_requirements,
     validate_document,
     validate_machine_path,
     validate_path,
@@ -38,6 +40,49 @@ class MachineObservationFixtureTests(unittest.TestCase):
             with self.subTest(payload=payload["name"]):
                 schema = json.loads((ROOT / payload["schema"]).read_text(encoding="utf-8"))
                 self.assertEqual(payload["required_keys"], schema["required"])
+
+    def test_registry_lists_agree_with_the_registered_routes(self) -> None:
+        registry = _fixture("../registry.json")
+        routes = registry["routes"]
+        self.assertEqual(sorted(registry["producers"]), sorted({r["producer"] for r in routes}))
+        self.assertEqual(
+            sorted(registry["operation_kinds"]), sorted({r["operation_kind"] for r in routes})
+        )
+        self.assertEqual(
+            sorted({payload["name"] for payload in registry["payload_contracts"]}),
+            sorted({r["payload_contract"] for r in routes}),
+        )
+
+    def test_routes_are_unique_per_producer_operation_and_payload(self) -> None:
+        routes = _fixture("../registry.json")["routes"]
+        keys = [
+            (r["producer"], r["operation_kind"], r["payload_contract"], r["payload_version"])
+            for r in routes
+        ]
+        self.assertEqual(len(keys), len(set(keys)))
+
+    def test_payload_contracts_are_unique_and_reachable_from_a_route(self) -> None:
+        registry = _fixture("../registry.json")
+        registered = [(p["name"], p["version"]) for p in registry["payload_contracts"]]
+        self.assertEqual(len(registered), len(set(registered)))
+        routed = {(r["payload_contract"], r["payload_version"]) for r in registry["routes"]}
+        self.assertEqual(sorted(set(registered)), sorted(routed))
+
+    def test_requirements_use_an_implemented_operator(self) -> None:
+        registry = _fixture("../registry.json")
+        blocks = [route["requirements"] for route in registry["routes"]]
+        blocks += [payload["ready_requirements"] for payload in registry["payload_contracts"]]
+        for requirement in [item for block in blocks for item in block]:
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement["operator"], REQUIREMENT_OPERATORS)
+                if requirement["operator"] == "equals":
+                    self.assertIn("value", requirement)
+
+    def test_an_unimplemented_requirement_operator_is_rejected(self) -> None:
+        with self.assertRaisesRegex(ContractError, "unimplemented operator"):
+            _check_requirements(
+                {"ok": True}, [{"path": ["ok"], "operator": "is_true"}], location="probe"
+            )
 
     def test_wrong_producer_operation_payload_route_is_rejected(self) -> None:
         document = _fixture("llmdocx-dry-run.json")
