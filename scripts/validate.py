@@ -15,6 +15,9 @@ class ContractError(ValueError):
     pass
 
 
+REQUIREMENT_OPERATORS = frozenset({"equals", "not_null"})
+
+
 def _object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
@@ -88,12 +91,15 @@ def _check_requirements(
         path = [str(part) for part in requirement["path"]]
         value = _value_at(data, path, location=location)
         operator = requirement["operator"]
-        if operator == "equals" and value != requirement.get("value"):
-            joined = "/".join(path)
-            raise ContractError(f"{location} requires {joined}={requirement.get('value')!r}")
-        if operator == "not_null" and value is None:
-            joined = "/".join(path)
-            raise ContractError(f"{location} requires non-null {joined}")
+        joined = "/".join(path)
+        if operator == "equals":
+            if value != requirement.get("value"):
+                raise ContractError(f"{location} requires {joined}={requirement.get('value')!r}")
+        elif operator == "not_null":
+            if value is None:
+                raise ContractError(f"{location} requires non-null {joined}")
+        else:
+            raise ContractError(f"{location} uses an unimplemented operator: {operator}")
 
 
 def _reference_values(
