@@ -12,7 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ContractError(ValueError):
-    pass
+    def __init__(self, *args: object, hint: str | None = None) -> None:
+        super().__init__(*args)
+        self.hint = hint
 
 
 REQUIREMENT_OPERATORS = frozenset({"equals", "not_null"})
@@ -241,7 +243,7 @@ def validate_document(document: dict[str, Any]) -> None:
 
 
 def validate_path(path: str | Path) -> None:
-    validate_document(_load_json(Path(path)))
+    _validated_path(path, machine=False)
 
 
 def _sha256(path: Path) -> str:
@@ -257,49 +259,209 @@ def _artifact_path(root: Path, raw: str) -> Path:
     target = (root / Path(*relative.parts)).resolve()
     try:
         if os.path.commonpath((str(root), str(target))) != str(root):
-            raise ContractError(f"artifact path escapes the generation: {raw}")
+            raise ContractError(
+                f"artifact path escapes the generation: {raw}",
+                hint="Do not consume this package; obtain artifacts contained in the generation.",
+            )
     except ValueError as exc:
-        raise ContractError(f"artifact path is on another volume: {raw}") from exc
+        raise ContractError(
+            f"artifact path is on another volume: {raw}",
+            hint="Do not consume this package; obtain artifacts contained in the generation.",
+        ) from exc
     return target
 
 
-def validate_machine_path(path: str | Path) -> None:
-    candidate = Path(path).resolve()
-    if candidate.name != "machine.json":
-        raise ContractError("public machine metadata basename must be machine.json")
+def _validated_path(path: str | Path, *, machine: bool) -> dict[str, Any]:
+    candidate = Path(path).resolve() if machine else Path(path)
+    if machine and candidate.name != "machine.json":
+        raise ContractError(
+            "public machine metadata basename must be machine.json",
+            hint="Pass the actual generation/machine.json, not a renamed envelope or fixture.",
+        )
     document = _load_json(candidate)
     validate_document(document)
+    if not machine:
+        return document
     root = candidate.parent
     for artifact_id, receipt in document["artifacts"].items():
         if receipt["status"] != "available":
             continue
         target = _artifact_path(root, receipt["path"])
         if not target.is_file():
-            raise ContractError(f"artifact file is missing: {artifact_id}")
+            raise ContractError(
+                f"artifact file is missing: {artifact_id}",
+                hint="Obtain the intact generation with its declared artifacts; preserve receipts.",
+            )
         if target.stat().st_size != receipt["bytes"]:
-            raise ContractError(f"artifact byte count mismatch: {artifact_id}")
+            raise ContractError(
+                f"artifact byte count mismatch: {artifact_id}",
+                hint="Do not consume these bytes or rewrite receipts; obtain an intact generation.",
+            )
         if _sha256(target) != receipt["byte_sha256"]:
-            raise ContractError(f"artifact sha256 mismatch: {artifact_id}")
+            raise ContractError(
+                f"artifact sha256 mismatch: {artifact_id}",
+                hint="Do not consume these bytes or rewrite receipts; obtain an intact generation.",
+            )
+    return document
 
 
-def main() -> None:
+def validate_machine_path(path: str | Path) -> None:
+    _validated_path(path, machine=True)
+
+
+def _error_hint(error: Exception) -> str:
+    if isinstance(error, ContractError):
+        return error.hint or (
+            "Inspect the reported rule against the pinned schemas/registry; "
+            "do not change observed statuses just to pass."
+        )
+    if isinstance(error, json.JSONDecodeError):
+        return "Check JSON syntax at the reported location in the input or validator resource."
+    if isinstance(error, UnicodeError):
+        return "Check that the reported input or validator resource is UTF-8 encoded."
+    return (
+        "Check the reported path, availability and permissions, "
+        "including validator schema/registry resources."
+    )
+
+
+def _validation_result(path: Path, *, machine: bool) -> tuple[dict[str, Any], str | None]:
+    result: dict[str, Any] = {
+        "path": str(path),
+        "valid": False,
+        "observation": None,
+        "error": None,
+    }
+    try:
+        document = _validated_path(path, machine=machine)
+    except (ContractError, json.JSONDecodeError, UnicodeError, OSError) as exc:
+        if isinstance(exc, ContractError):
+            code = "contract_error"
+        elif isinstance(exc, json.JSONDecodeError):
+            code = "json_error"
+        elif isinstance(exc, UnicodeError):
+            code = "encoding_error"
+        else:
+            code = "io_error"
+        result["error"] = {"code": code, "message": str(exc)}
+        return result, _error_hint(exc)
+
+    result["valid"] = True
+    result["observation"] = {
+        key: document[key]
+        for key in ("contract", "producer", "operation", "lifecycle", "handoff", "delivery")
+    }
+    payload = document["payload"]
+    result["observation"]["payload_contract"] = None if payload is None else payload["contract"]
+    return result, None
+
+
+def _display(value: object) -> str:
+    """Keep untrusted fields on one terminal line, including accepted lone surrogates."""
+    return "".join(char if char.isprintable() else ascii(char)[1:-1] for char in str(value))
+
+
+def _handoff_hint(status: str, *, machine: bool) -> str:
+    if status == "blocked":
+        return "Do not continue downstream; inspect the producer's handoff codes and evidence."
+    if status == "pending":
+        return "Wait for a terminal observation; do not consume a pending handoff."
+    if status == "not_applicable":
+        return "No downstream handoff is declared."
+    if not machine:
+        return "Artifact files are unverified; check the actual generation with --machine."
+    return (
+        "Readiness is declared; still check the expected producer/operation/payload, "
+        "product acceptance and execution authorization."
+    )
+
+
+def _print_text_result(result: dict[str, Any], hint: str | None, *, machine: bool) -> None:
+    print(f"[{'VALID' if result['valid'] else 'FAIL'}] {_display(result['path'])}")
+    observation = result["observation"]
+    if observation is None:
+        error = result["error"]
+        print(f"  Error: {error['code']}: {_display(error['message'])}")
+        print(f"  Next: {_display(hint)}")
+        return
+    producer = observation["producer"]
+    operation = observation["operation"]
+    payload = observation["payload_contract"]
+    print(f"  Producer: {_display(producer['name'])} {_display(producer['version'])}")
+    print(f"  Operation: {_display(operation['kind'])} ({_display(operation['id'])})")
+    payload_text = "none" if payload is None else f"{payload['name']} v{payload['version']}"
+    print(f"  Payload: {_display(payload_text)}")
+    for axis in ("lifecycle", "delivery", "handoff"):
+        state = observation[axis]
+        value = (
+            f"{state['phase']} / {state['outcome'] or 'none'}"
+            if axis == "lifecycle"
+            else state["status"]
+        )
+        print(f"  {axis.capitalize()}: {_display(value)}")
+        if state["codes"]:
+            print(f"  {axis.capitalize()} codes: {_display(', '.join(state['codes']))}")
+    print(f"  Next: {_handoff_hint(observation['handoff']['status'], machine=machine)}")
+
+
+def main(argv: list[str] | None = None) -> int:
     import argparse
 
-    parser = argparse.ArgumentParser(description="validate machine observation envelopes")
+    parser = argparse.ArgumentParser(
+        description="Validate explicit machine observation paths without launching downstream work.",
+        epilog=(
+            "Default: readable results for every input; artifact files are NOT checked.\n"
+            "Use --machine for package checks and --json for automation.\n"
+            "Exit codes: 0 = all valid; 1 = validation/read failure; 2 = argument error.\n"
+            "Validation is not execution success or authorization for downstream work.\n\n"
+            "Example: python3 scripts/validate.py --machine path/to/generation/machine.json"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
         "--machine",
         action="store_true",
         help="require machine.json basename and verify available artifact bytes",
     )
-    parser.add_argument("paths", nargs="+", type=Path)
-    args = parser.parse_args()
-    for candidate in args.paths:
-        if args.machine:
-            validate_machine_path(candidate)
-        else:
-            validate_path(candidate)
-        print(f"ok: {candidate}")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="report every input in one JSON document; valid does not imply ready handoff",
+    )
+    parser.add_argument(
+        "paths", nargs="+", type=Path, help="explicit input paths, checked in order"
+    )
+    args = parser.parse_args(argv)
+    checked = [_validation_result(candidate, machine=args.machine) for candidate in args.paths]
+    results = [result for result, _ in checked]
+    valid = all(result["valid"] for result in results)
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "report_version": 1,
+                    "scope": "package" if args.machine else "envelope",
+                    "valid": valid,
+                    "results": results,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0 if valid else 1
+    scope = (
+        "package (available artifact files checked for valid inputs)"
+        if args.machine
+        else "envelope (artifact files NOT checked)"
+    )
+    print(f"Validation scope: {scope}")
+    for result, hint in checked:
+        print()
+        _print_text_result(result, hint, machine=args.machine)
+    count = sum(result["valid"] for result in results)
+    print(f"\nSummary: {count} valid, {len(results) - count} failed ({len(results)} inputs).")
+    print("Validation is not execution success or authorization for downstream work.")
+    return 0 if valid else 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
