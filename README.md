@@ -35,6 +35,15 @@ meaning of anything already registered belongs to a new envelope version.
 [COMPATIBILITY.md](COMPATIBILITY.md) states which changes qualify, how releases
 are numbered, and how producers and consumers advance their pins.
 
+`chemistry/elementary-step` has two registered versions. Version 2 renames
+`endpoint_pair` to `endpoint_geometry` and never carries an arrangement of
+separate molecules: a multicomponent endpoint is handed off as its individual
+components, and placing them relative to each other is left to the consumer.
+Its readiness predicate requires `endpoint_geometry` to be non-null. Version 1
+stays registered so existing generations remain verifiable. Chemvas defines the
+interior layout of both versions; the validator does not inspect it, so a ready
+v2 envelope does not establish that its geometry is well formed.
+
 ## Required Semantics
 
 - `queued` and `running` observations use `pending` for lifecycle outcome,

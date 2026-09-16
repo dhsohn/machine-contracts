@@ -44,6 +44,28 @@
       ]
     },
     {
+      "name": "chemistry/elementary-step",
+      "schema": "schemas/payloads/chemistry-elementary-step-v2.schema.json",
+      "version": 2,
+      "required_keys": [
+        "step_id",
+        "source",
+        "reactant",
+        "product",
+        "atom_correspondence",
+        "bond_changes",
+        "mapping_validation",
+        "endpoint_geometry",
+        "geometry_scope"
+      ],
+      "ready_requirements": [
+        {
+          "path": ["endpoint_geometry"],
+          "operator": "not_null"
+        }
+      ]
+    },
+    {
       "name": "chemistry/results-bundle",
       "schema": "schemas/payloads/chemistry-results-bundle-v1.schema.json",
       "version": 1,
@@ -205,6 +227,13 @@
       "operation_kind": "chemistry/elementary-step-export",
       "payload_contract": "chemistry/elementary-step",
       "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "chemvas",
+      "operation_kind": "chemistry/elementary-step-export",
+      "payload_contract": "chemistry/elementary-step",
+      "payload_version": 2,
       "requirements": []
     },
     {

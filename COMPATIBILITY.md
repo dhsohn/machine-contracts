@@ -56,9 +56,9 @@ follow the identifier grammar and whose values must be receipts, and
 `payload.data` is delegated to the registered payload schema.
 
 Open, and deliberately so: each payload schema is closed only at its top level.
-Twelve of their properties are declared as bare objects with no inner
-constraints — `source`, `reactant`, `product`, `atom_correspondence`,
-`bond_changes` and `geometry_scope` in `chemistry/elementary-step`, `summary`
+These properties are declared as bare objects with no inner constraints —
+`source`, `reactant`, `product`, `atom_correspondence`, `bond_changes` and
+`geometry_scope` in both versions of `chemistry/elementary-step`, `summary`
 and `results` in `chemistry/results-bundle`, `metadata` in
 `document/paper-pack`, `pages` in both `document/patch-*`, and
 `paragraph_notes` in `manuscript/revision-report`.

@@ -141,6 +141,32 @@ class MachineObservationFixtureTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "pending"):
             validate_document(document)
 
+    def test_elementary_step_v2_ready_requires_endpoint_geometry(self) -> None:
+        document = _fixture("chemvas-v2-ready.json")
+        validate_document(document)
+        document["payload"]["data"]["endpoint_geometry"] = None
+        with self.assertRaisesRegex(ContractError, "endpoint_geometry"):
+            validate_document(document)
+
+    def test_v1_elementary_step_payload_cannot_take_the_v2_route(self) -> None:
+        document = _fixture("chemvas-ready.json")
+        document["payload"]["contract"]["version"] = 2
+        with self.assertRaisesRegex(ContractError, "'endpoint_pair' was unexpected"):
+            validate_document(document)
+
+    def test_v2_elementary_step_payload_cannot_take_the_v1_route(self) -> None:
+        document = _fixture("chemvas-v2-ready.json")
+        document["payload"]["contract"]["version"] = 1
+        with self.assertRaisesRegex(ContractError, "'endpoint_geometry' was unexpected"):
+            validate_document(document)
+
+    def test_elementary_step_v2_requires_the_endpoint_geometry_key(self) -> None:
+        document = _fixture("chemvas-v2-blocked.json")
+        validate_document(document)
+        document["payload"]["data"].pop("endpoint_geometry")
+        with self.assertRaisesRegex(ContractError, "endpoint_geometry"):
+            validate_document(document)
+
 
 if __name__ == "__main__":
     unittest.main()
