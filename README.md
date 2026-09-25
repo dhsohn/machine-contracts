@@ -209,3 +209,19 @@ Hermes remains a third-party consumer. Its user-local validator bundles the
 exact `registry.json` from the pinned contract commit and applies the same route,
 artifact-reference, and readiness table without requiring `jsonschema` at
 runtime; the Hermes core is not modified.
+
+## How this was built
+
+I'm a chemist, not a programmer. AI coding agents write the schemas, validator and
+fixtures in this repository. I decide what the envelope must guarantee, and
+[COMPATIBILITY.md](COMPATIBILITY.md) fixes what may still change now that v1 is frozen.
+
+I don't review the code line by line, so a change is accepted on evidence, not on an
+agent's report that it works:
+
+- `make check` runs lint, formatting and the schema, registry and semantic fixture
+  checks. CI runs the same checks.
+- The CI of Chemvas, ORCA_auto and LLMdocx runs each product's real emitter and
+  validates the resulting `machine.json` against a pinned commit of this repository,
+  so a contract change reaches a product only when that product deliberately advances
+  its pin.
