@@ -6,7 +6,7 @@
 
 ## 이 레포가 무엇인가
 
-`factory/machine-observation` 봉투의 정본이다. Chemvas·orca_auto·ollama_bot·LLMdocx가
+`factory/machine-observation` 봉투의 정본이다. Chemvas·orca_auto·ollama_bot·Chemleaf가
 `machine.json`으로 이 계약을 방출하고, Hermes가 소비한다. 제품 로직은 들어오지 않는다.
 
 ## 검증

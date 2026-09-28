@@ -1,7 +1,7 @@
 # Factory Machine Observation Contract
 
 `factory/machine-observation` is the single public machine-readable envelope
-used by Chemvas, orca_auto, ollama_bot, and LLMdocx. This repository is the
+used by Chemvas, orca_auto, ollama_bot, and Chemleaf. This repository is the
 versioned source of truth for the envelope schema, registered routes, payload
 schemas, semantic validator, and conformance fixtures. Each durable operation
 generation or delivered package exposes exactly one public metadata file named
@@ -176,7 +176,7 @@ No unvalidated status is presented as an observation.
   missing/malformed report or nonzero exit is never successful validation.
 
 `valid` is contract conformance, not execution success. A blocked Chemvas
-export, an uncertain ORCA run, or a failed LLMdocx run with delivered output
+export, an uncertain ORCA run, or a failed document run with delivered output
 can all be valid observations. Keep `lifecycle`, `handoff`, and `delivery`
 separate. Even a package-validated `handoff.status: "ready"` establishes only
 the registered readiness rules: callers must still bind the expected
@@ -221,7 +221,7 @@ agent's report that it works:
 
 - `make check` runs lint, formatting and the schema, registry and semantic fixture
   checks. CI runs the same checks.
-- The CI of Chemvas, ORCA_auto and LLMdocx runs each product's real emitter and
+- The CI of Chemvas, ORCA_auto and Chemleaf runs each product's real emitter and
   validates the resulting `machine.json` against a pinned commit of this repository,
   so a contract change reaches a product only when that product deliberately advances
   its pin.
