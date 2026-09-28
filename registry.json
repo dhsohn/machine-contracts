@@ -216,6 +216,7 @@
     }
   ],
   "producers": [
+    "chemleaf",
     "chemvas",
     "llmdocx",
     "ollama_bot",
@@ -294,6 +295,27 @@
       "producer": "llmdocx",
       "operation_kind": "document/run",
       "payload_contract": "document/run-result",
+      "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "chemleaf",
+      "operation_kind": "document/paper-pack",
+      "payload_contract": "document/paper-pack",
+      "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "chemleaf",
+      "operation_kind": "document/patch",
+      "payload_contract": "document/patch-preview",
+      "payload_version": 1,
+      "requirements": []
+    },
+    {
+      "producer": "chemleaf",
+      "operation_kind": "document/patch",
+      "payload_contract": "document/patch-result",
       "payload_version": 1,
       "requirements": []
     }
